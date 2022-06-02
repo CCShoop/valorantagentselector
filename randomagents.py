@@ -95,6 +95,22 @@ def previous_agents(app, players_checked_vars):
     close_button = PushButton(app, text='Close', command=select_agents, args=[app, players_checked_vars])
     close_button.bg = '#900000'
 
+# Randomly selects a map
+def select_map(app):
+    app.destroy()
+    app = App(title='Map Selected', bg='#191919')
+    random.seed(round(time.time() * 1000))
+    global maps
+    map = maps[random.randint(0, len(maps)-1)]
+    text = Text(app, height=3)
+    text.text_color = 'white'
+    text.append('\n' + map)
+    text.disable()
+    copy_button = PushButton(app, text='Copy', command=pc.copy, args=[text.value])
+    copy_button.bg = '#900000'
+    close_button = PushButton(app, text='Close', command=main, args=[app])
+    close_button.bg = '#900000'
+
 # Default window configuration
 def main(app):
     app.destroy()
@@ -102,6 +118,9 @@ def main(app):
     if player_conf.sections() and agent_conf.sections():
         generate_button = PushButton(app, text='Select Random Agents', command=select_agents, args=[app])
         generate_button.bg = '#900000'
+    if map_conf.sections():
+        map_select_button = PushButton(app, text='Select Random Map', command=select_map, args=[app])
+        map_select_button.bg = '#900000'
 
     close_button = PushButton(app, text='Exit', command=exit, args=[0])
     close_button.bg = '#900000'
@@ -163,6 +182,10 @@ map_list = map_conf.sections()
 map_list.sort()
 with open('maps.ini', 'w') as conf:
     map_conf.write(conf)
+global maps
+maps = []
+for map in map_conf.sections():
+    maps.append(map)
 app.destroy()
 
 if __name__ == '__main__':
