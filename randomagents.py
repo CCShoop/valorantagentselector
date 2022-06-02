@@ -159,12 +159,13 @@ def save_agents_to_player(app, box, player, agent_checkboxes):
     for agent, agent_checkbox in zip(agents, agent_checkboxes):
         if not player_conf.has_option(player, agent) and agent_checkbox.value:
             player_conf.set(player, agent, '1')
-    with open('players.ini', 'w') as conf:
+    with open('conf/players.ini', 'w') as conf:
         player_conf.write(conf)
     default_players()
     info(title='Updated Successfully', text=f'{player}\'s agents were successfully updated.')
     main(app, box)
 
+# For adding a new player and their unlocked agents to the config file
 def add_new_player(app, box):
     new_player_name = question('Add New Player', 'What is the new player\'s name?')
     if new_player_name not in player_conf.sections():
@@ -181,11 +182,19 @@ def add_new_player(app, box):
     else:
         error('Player Exists', 'Player already exists.')
 
+# For adding a new agent to the config file
+def add_new_agent(app, box):
+    pass
+
+# For adding a new map to the config file
+def add_new_map(app, box):
+    pass
+
 # Default window configuration
 def main(app, box):
     box.destroy()
     box = Box(app)
-    val_logo = Picture(box, image='valorant_logo.png')
+    val_logo = Picture(box, image='img/valorant_logo.png')
     val_logo.align = 'top'
     val_logo.width = 375
     val_logo.height = 60
@@ -205,6 +214,10 @@ def main(app, box):
         add_agent_to_player_button.bg = '#900000'
     add_new_player_button = PushButton(box, text='Add New Player', command=add_new_player, args=[app, box])
     add_new_player_button.bg = '#900000'
+    add_new_agent_button = PushButton(box, text='Add New Agent', command=add_new_agent, args=[app, box])
+    add_new_agent_button.bg = '#900000'
+    add_new_map_button = PushButton(box, text='Add New Map', command=add_new_map, args=[app, box])
+    add_new_map_button.bg = '#900000'
     close_button = PushButton(box, text='Exit', command=exit, args=[0])
     close_button.bg = '#900000'
 
@@ -216,10 +229,10 @@ def default_agents():
     # Agents config setup
     agent_conf_raw = cp.ConfigParser()
     try:
-        agent_conf_raw.read_file(open('agents.ini'))
+        agent_conf_raw.read_file(open('conf/agents.ini'))
     except:
-        warn('Warning', 'agents.ini not found. Please add agents.')
-        agent_conf_raw.read('agents.ini')
+        warn('Warning', 'conf/agents.ini not found. Please add agents.')
+        agent_conf_raw.read('conf/agents.ini')
         main(app, box)
     global agents
     agents = []
@@ -230,7 +243,7 @@ def default_agents():
     agent_conf = cp.ConfigParser()
     for agent in agents:
         agent_conf.add_section(agent)
-    with open('agents.ini', 'w') as conf:
+    with open('conf/agents.ini', 'w') as conf:
         agent_conf.write(conf)
 
 def default_players():
@@ -238,10 +251,10 @@ def default_players():
     global player_conf
     player_conf = cp.ConfigParser()
     try:
-        player_conf.read_file(open('players.ini'))
+        player_conf.read_file(open('conf/players.ini'))
     except:
-        warn('Warning', 'players.ini not found. Please add players.')
-        player_conf.read('players.ini')
+        warn('Warning', 'conf/players.ini not found. Please add players.')
+        player_conf.read('conf/players.ini')
         main(app, box)
     changed = False
     sorting_list = []
@@ -253,7 +266,7 @@ def default_players():
         sorting_list.append([len(player_conf.options(player)), player, player_conf.options(player)])
     sorting_list.sort()
     if changed:
-        with open('players.ini', 'w') as conf:
+        with open('conf/players.ini', 'w') as conf:
             player_conf.write(conf)
     sort_player_conf = cp.ConfigParser()
     for item in sorting_list:
@@ -261,7 +274,7 @@ def default_players():
         item[2].sort()
         for option in item[2]:
             sort_player_conf.set(item[1], str(option), '1')
-    with open('players.ini', 'w') as conf:
+    with open('conf/players.ini', 'w') as conf:
         sort_player_conf.write(conf)
 
 def default_maps():
@@ -269,14 +282,14 @@ def default_maps():
     global map_conf
     map_conf = cp.ConfigParser()
     try:
-        map_conf.read_file(open('maps.ini'))
+        map_conf.read_file(open('conf/maps.ini'))
     except:
-        warn('Warning', 'maps.ini not found. Please add maps.')
-        map_conf.read('maps.ini')
+        warn('Warning', 'conf/maps.ini not found. Please add maps.')
+        map_conf.read('conf/maps.ini')
         main(app, box)
     map_list = map_conf.sections()
     map_list.sort()
-    with open('maps.ini', 'w') as conf:
+    with open('conf/maps.ini', 'w') as conf:
         map_conf.write(conf)
     global maps
     maps = map_conf.sections()
