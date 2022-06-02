@@ -1,24 +1,33 @@
-from guizero import App, Text, TextBox, ListBox, PushButton, CheckBox, info, warn, error, question
+from guizero import App, Text, PushButton, CheckBox, warn, error, question
 import configparser as cp
 import random
 import pyperclip as pc
 import time
 
-# Second part of selecting agents function
-def select_agents(app):
+# First part of selecting agents function
+# This part generates the checkboxes for player names
+def select_agents(app, players_checked_vars=[]):
     app.destroy()
     app = App(title='Select Random Agents', bg='#191919')
-    players_checked_vars = []
-    for player in player_conf.sections():
-        player_check = CheckBox(app, text=player)
-        player_check.text_color = 'white'
-        players_checked_vars.append(player_check)
+    if len(players_checked_vars) == len(player_conf.sections()): # If the checkboxes were passed in by the second part
+        ii = 0
+        for player in player_conf.sections():
+            player_check = CheckBox(app, text=player)
+            player_check.text_color = 'white'
+            player_check.value = players_checked_vars[ii].value
+            ii += 1
+    else:
+        for player in player_conf.sections(): # Generating all checkboxes fresh
+            player_check = CheckBox(app, text=player)
+            player_check.text_color = 'white'
+            players_checked_vars.append(player_check)
     generate_button = PushButton(app, text='Generate', command=generate_agents, args=[app, players_checked_vars])
     generate_button.bg = '#900000'
     back_button = PushButton(app, text='Back', command=main, args=[app])
     back_button.bg = '#900000'
     
-
+# Second part of selecting agents function
+# This part does the random number generation to select agents and allows the user to copy them with a button
 def generate_agents(app, players_checked_vars):
     app.destroy()
     app = App(title='Agents Selected', bg='#191919')
@@ -50,14 +59,16 @@ def generate_agents(app, players_checked_vars):
             longest_output = len(new_output) + 2
         output.append(new_output)
         picked = -1
-    text = Text(app, width=longest_output, height=len(output))
+    text = Text(app, width=longest_output, height=len(output)+1)
+    text.text_color = 'white'
+    text.append('\n')
     for ii in range(len(output)):
         output_step = output[ii].strip('{').strip('}')
         text.append(output_step)
     text.disable()
     copy_button = PushButton(app, text='Copy', command=pc.copy, args=[text.value])
     copy_button.bg = '#900000'
-    close_button = PushButton(app, text='Close', command=main, args=[app])
+    close_button = PushButton(app, text='Close', command=select_agents, args=[app, players_checked_vars])
     close_button.bg = '#900000'
 
 
