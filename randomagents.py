@@ -161,8 +161,25 @@ def save_agents_to_player(app, box, player, agent_checkboxes):
             player_conf.set(player, agent, '1')
     with open('players.ini', 'w') as conf:
         player_conf.write(conf)
+    default_players()
     info(title='Updated Successfully', text=f'{player}\'s agents were successfully updated.')
     main(app, box)
+
+def add_new_player(app, box):
+    new_player_name = question('Add New Player', 'What is the new player\'s name?')
+    if new_player_name not in player_conf.sections():
+        player_conf.add_section(new_player_name)
+        player_conf.set(new_player_name, 'brimstone', '1')
+        player_conf.set(new_player_name, 'jett', '1')
+        player_conf.set(new_player_name, 'phoenix', '1')
+        player_conf.set(new_player_name, 'sage', '1')
+        player_conf.set(new_player_name, 'sova', '1')
+        player_combo = Combo(box, options=[new_player_name])
+        player_combo.value = new_player_name
+        player_combo.visible = False
+        list_agents_for_player(app, box, player_combo)
+    else:
+        error('Player Exists', 'Player already exists.')
 
 # Default window configuration
 def main(app, box):
@@ -186,7 +203,8 @@ def main(app, box):
     if player_conf.sections() and agent_conf.sections():
         add_agent_to_player_button = PushButton(box, text='Add Agent to Player', command=add_agent_to_player, args=[app, box])
         add_agent_to_player_button.bg = '#900000'
-
+    add_new_player_button = PushButton(box, text='Add New Player', command=add_new_player, args=[app, box])
+    add_new_player_button.bg = '#900000'
     close_button = PushButton(box, text='Exit', command=exit, args=[0])
     close_button.bg = '#900000'
 
@@ -237,15 +255,14 @@ def default_players():
     if changed:
         with open('players.ini', 'w') as conf:
             player_conf.write(conf)
-
-    new_player_conf = cp.ConfigParser()
+    sort_player_conf = cp.ConfigParser()
     for item in sorting_list:
-        new_player_conf.add_section(item[1])
+        sort_player_conf.add_section(item[1])
         item[2].sort()
         for option in item[2]:
-            new_player_conf.set(item[1], str(option), '1')
+            sort_player_conf.set(item[1], str(option), '1')
     with open('players.ini', 'w') as conf:
-        new_player_conf.write(conf)
+        sort_player_conf.write(conf)
 
 def default_maps():
     # Maps config setup
