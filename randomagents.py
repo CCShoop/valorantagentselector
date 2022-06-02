@@ -1,8 +1,7 @@
-from guizero import App, Text, ListBox, PushButton, CheckBox, info, warn, error, question
+from guizero import App, Text, TextBox, ListBox, PushButton, CheckBox, info, warn, error, question
 import configparser as cp
 import random
-import os
-import sys
+import pyperclip as pc
 import time
 
 # Second part of selecting agents function
@@ -21,6 +20,8 @@ def select_agents(app):
     
 
 def generate_agents(app, players_checked_vars):
+    app.destroy()
+    app = App(title='Agents Selected', bg='#191919')
     players_checked = []
     counter = 0
     for player in player_conf.sections():
@@ -44,27 +45,20 @@ def generate_agents(app, players_checked_vars):
                 error('Error', 'Failed to pick agents. Please try again.')
                 main(app)
         used_agents.append(agents[picked])
-        new_output = str(player) + ': ' + str(agents[picked]) + ' \ \n'
+        new_output = str(player) + ': ' + str(agents[picked]) + '\n'
         if len(new_output) + 2 > longest_output: # Updates longest output; + 2 is for brackets
             longest_output = len(new_output) + 2
         output.append(new_output)
         picked = -1
-    text = ListBox(app, width=longest_output, height=len(output))
+    text = Text(app, width=longest_output, height=len(output))
     for ii in range(len(output)):
-        line = str(ii + 1) + '.0'
         output_step = output[ii].strip('{').strip('}')
-        text.append(line + ' ' + output_step)
+        text.append(output_step)
     text.disable()
-    copy_button = PushButton(app, text='Copy', command=copy, args=[app, text])
+    copy_button = PushButton(app, text='Copy', command=pc.copy, args=[text.value])
     copy_button.bg = '#900000'
     close_button = PushButton(app, text='Close', command=main, args=[app])
     close_button.bg = '#900000'
-
-# Copies contents of text field to clipboard
-def copy(app, text):
-    app.clipboard_clear()
-    app.clipboard_append(text.value.strip('\n\n'))
-    app.update()
 
 
 
