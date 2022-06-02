@@ -1,4 +1,4 @@
-from guizero import App, Text, PushButton, CheckBox, warn, error, question
+from guizero import App, Text, PushButton, CheckBox, Combo, Picture, info, warn, error, question
 import configparser as cp
 import random
 import pyperclip as pc
@@ -69,7 +69,6 @@ def generate_agents(app, players_checked_vars):
     for ii in range(len(output)):
         output_step = output[ii].strip('{').strip('}')
         text.append(output_step)
-    text.disable()
     global prev_agents
     global first_generation
     first_generation = False
@@ -89,7 +88,6 @@ def previous_agents(app, players_checked_vars):
     for ii in range(len(prev_agents)):
         output_step = prev_agents[ii].strip('{').strip('}')
         text.append(output_step)
-    text.disable()
     copy_button = PushButton(app, text='Copy', command=pc.copy, args=[text.value])
     copy_button.bg = '#900000'
     close_button = PushButton(app, text='Close', command=select_agents, args=[app, players_checked_vars])
@@ -105,22 +103,71 @@ def select_map(app):
     text = Text(app, height=3)
     text.text_color = 'white'
     text.append('\n' + map)
-    text.disable()
     copy_button = PushButton(app, text='Copy', command=pc.copy, args=[text.value])
     copy_button.bg = '#900000'
     close_button = PushButton(app, text='Close', command=main, args=[app])
     close_button.bg = '#900000'
 
+# First part of saving a player's unlocked agents
+def add_agent_to_player(app):
+    app.destroy()
+    app = App(title='Add Agent(s) to Player', bg='#191919', height=800)
+    text = Text(app, text='Select a Player:', height=3)
+    text.text_color = 'white'
+    text.append('\n')
+    players = player_conf.sections()
+    player_combo = Combo(app, options=players)
+    player_combo.text_color = 'white'
+    player_combo.focus()
+    player_button = PushButton(app, text='Edit Agents', command=list_agents_for_player, args=[app, player_combo])
+    player_button.bg = '#900000'
+    back_button = PushButton(app, text='Back', command=main, args=[app])
+    back_button.bg = '#900000'
+
+# Second part of saving a player's unlocked agents
+def list_agents_for_player(app, player_combo):
+    player_combo.disable()
+    agent_checkboxes = []
+    for agent in agent_conf.sections():
+        agent_checkbox = CheckBox(app, text=agent)
+        agent_checkbox.text_color = 'white'
+        try:
+            agent_checkbox.value = player_conf.getboolean(player_combo.value, agent)
+        except:
+            agent_checkbox.value = False
+        agent_checkboxes.append(agent_checkbox)
+    save_button = PushButton(app, text='Save', command=save_agents_to_player, args=[app, player_combo.value, agent_checkboxes])
+    save_button.bg = '#900000'
+
+# Saves agent checkbox values to a player
+def save_agents_to_player(app, player, agent_checkboxes):
+    for agent, agent_checkbox in zip(agents, agent_checkboxes):
+        if not player_conf.has_option(player, agent) and agent_checkbox.value:
+            player_conf.set(player, agent, '1')
+    with open('players.ini', 'w') as conf:
+        player_conf.write(conf)
+    info(title='Updated Successfully', text=f'{player}\'s agents were successfully updated.')
+    main(app)
+
 # Default window configuration
 def main(app):
     app.destroy()
     app = App(title='Random Agent Selector', bg='#191919')
+    val_logo = Picture(app, image='valorant_logo.png')
+    val_logo.align = 'top'
+    val_logo.width = 375
+    val_logo.height = 60
+    title_text = Text(app, text='Random Agent Selector', size=22, height=1)
+    title_text.text_color = 'white'
     if player_conf.sections() and agent_conf.sections():
         generate_button = PushButton(app, text='Select Random Agents', command=select_agents, args=[app])
         generate_button.bg = '#900000'
     if map_conf.sections():
         map_select_button = PushButton(app, text='Select Random Map', command=select_map, args=[app])
         map_select_button.bg = '#900000'
+    if player_conf.sections() and agent_conf.sections():
+        add_agent_to_player_button = PushButton(app, text='Add Agent to Player', command=add_agent_to_player, args=[app])
+        add_agent_to_player_button.bg = '#900000'
 
     close_button = PushButton(app, text='Exit', command=exit, args=[0])
     close_button.bg = '#900000'
@@ -183,9 +230,7 @@ map_list.sort()
 with open('maps.ini', 'w') as conf:
     map_conf.write(conf)
 global maps
-maps = []
-for map in map_conf.sections():
-    maps.append(map)
+maps = map_conf.sections()
 app.destroy()
 
 if __name__ == '__main__':
