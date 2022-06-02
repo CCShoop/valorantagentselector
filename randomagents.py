@@ -23,6 +23,10 @@ def select_agents(app, players_checked_vars=[]):
             players_checked_vars.append(player_check)
     generate_button = PushButton(app, text='Generate', command=generate_agents, args=[app, players_checked_vars])
     generate_button.bg = '#900000'
+    global first_generation
+    if not first_generation:
+        previous_button = PushButton(app, text='Show Previous Agents', command=previous_agents, args=[app, players_checked_vars])
+        previous_button.bg = '#900000'
     back_button = PushButton(app, text='Back', command=main, args=[app])
     back_button.bg = '#900000'
     
@@ -66,13 +70,30 @@ def generate_agents(app, players_checked_vars):
         output_step = output[ii].strip('{').strip('}')
         text.append(output_step)
     text.disable()
+    global prev_agents
+    global first_generation
+    first_generation = False
+    prev_agents = output
     copy_button = PushButton(app, text='Copy', command=pc.copy, args=[text.value])
     copy_button.bg = '#900000'
     close_button = PushButton(app, text='Close', command=select_agents, args=[app, players_checked_vars])
     close_button.bg = '#900000'
 
-
-
+# Shows the agents selected in the previous generation
+def previous_agents(app, players_checked_vars):
+    app.destroy()
+    app = App(title='Previous Agents', bg='#191919')
+    text = Text(app, height=len(prev_agents)+1)
+    text.text_color = 'white'
+    text.append('\n')
+    for ii in range(len(prev_agents)):
+        output_step = prev_agents[ii].strip('{').strip('}')
+        text.append(output_step)
+    text.disable()
+    copy_button = PushButton(app, text='Copy', command=pc.copy, args=[text.value])
+    copy_button.bg = '#900000'
+    close_button = PushButton(app, text='Close', command=select_agents, args=[app, players_checked_vars])
+    close_button.bg = '#900000'
 
 # Default window configuration
 def main(app):
@@ -86,6 +107,8 @@ def main(app):
     close_button.bg = '#900000'
 
 
+app = App(visible=False)
+first_generation = True # Used for Previous Agents button
 # Agents config setup
 agent_conf = cp.ConfigParser()
 try:
@@ -140,8 +163,9 @@ map_list = map_conf.sections()
 map_list.sort()
 with open('maps.ini', 'w') as conf:
     map_conf.write(conf)
+app.destroy()
 
 if __name__ == '__main__':
-    app = App()
+    app = App(visible=False)
     main(app)
     app.display()
