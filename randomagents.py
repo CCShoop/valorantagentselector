@@ -12,9 +12,10 @@ def select_agents(app, box, players_checked_vars=[]):
     if len(players_checked_vars) == len(player_conf.sections()): # If the checkboxes were passed in by the second part
         ii = 0
         for player in player_conf.sections():
-            player_check = CheckBox(box, text=player)
-            player_check.text_color = 'white'
-            player_check.value = players_checked_vars[ii].value
+            player_check_value = players_checked_vars[ii].value
+            players_checked_vars[ii] = CheckBox(box, text=player)
+            players_checked_vars[ii].text_color = 'white'
+            players_checked_vars[ii].value = player_check_value
             ii += 1
     else:
         for player in player_conf.sections(): # Generating all checkboxes fresh
@@ -29,7 +30,7 @@ def select_agents(app, box, players_checked_vars=[]):
         previous_button.bg = '#900000'
     back_button = PushButton(box, text='Back', command=main, args=[app, box])
     back_button.bg = '#900000'
-    
+
 # Second part of selecting agents function
 # This part does the random number generation to select agents and allows the user to copy them with a button
 def generate_agents(app, box, players_checked_vars):
@@ -43,7 +44,7 @@ def generate_agents(app, box, players_checked_vars):
         counter += 1
     if len(players_checked) < 1:
         error('Error', 'Please select at least one player.')
-        main(app, box)
+        select_agents(app, box, players_checked_vars)
     used_agents = []
     output = []
     longest_output = 0
