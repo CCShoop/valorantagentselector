@@ -8,6 +8,7 @@ import time
 # This part generates the checkboxes for player names
 def select_agents(app, box, players_checked_vars=[]):
     box.destroy()
+    app.height = 100 + 25 * len(player_conf.sections())
     box = Box(app)
     if len(players_checked_vars) == len(player_conf.sections()): # If the checkboxes were passed in by the second part
         ii = 0
@@ -26,6 +27,7 @@ def select_agents(app, box, players_checked_vars=[]):
     generate_button.bg = '#900000'
     global first_generation
     if not first_generation:
+        app.height += 35
         previous_button = PushButton(box, text='Show Previous Agents', command=previous_agents, args=[app, box, players_checked_vars])
         previous_button.bg = '#900000'
     back_button = PushButton(box, text='Back', command=main, args=[app, box])
@@ -45,6 +47,7 @@ def generate_agents(app, box, players_checked_vars):
     if len(players_checked) < 1:
         error('Error', 'Please select at least one player.')
         select_agents(app, box, players_checked_vars)
+    app.height = 100 + 25 * len(players_checked)
     used_agents = []
     output = []
     longest_output = 0
@@ -95,6 +98,7 @@ def generate_agents(app, box, players_checked_vars):
 # Shows the agents selected in the previous generation
 def previous_agents(app, box, players_checked_vars):
     box.destroy()
+    app.height = 100 + 25 * len(prev_agents)
     box = Box(app)
     text = Text(box, height=len(prev_agents)+1)
     text.text_color = 'white'
@@ -110,6 +114,7 @@ def previous_agents(app, box, players_checked_vars):
 # Randomly selects a map
 def select_map(app, box):
     box.destroy()
+    app.height = 175
     box = Box(app)
     random.seed(round(time.time() * 1000))
     global maps
@@ -125,6 +130,7 @@ def select_map(app, box):
 # First part of saving a player's unlocked agents
 def add_agent_to_player(app, box):
     box.destroy()
+    app.height = 200
     box = Box(app)
     text = Text(box, text='Select a Player:', height=3)
     text.text_color = 'white'
@@ -141,6 +147,7 @@ def add_agent_to_player(app, box):
 # Second part of saving a player's unlocked agents
 def list_agents_for_player(app, box, player_combo):
     box.destroy()
+    app.height = 200 + 25 * len(agent_conf)
     box = Box(app)
     text = Text(box, text='Select a Player:', height=3)
     text.text_color = 'white'
@@ -181,31 +188,54 @@ def save_agents_to_player(app, box, player, agent_checkboxes):
 # For adding a new player and their unlocked agents to the config file
 def add_new_player(app, box):
     new_player_name = question('Add New Player', 'What is the new player\'s name?')
-    if new_player_name not in player_conf.sections():
-        player_conf.add_section(new_player_name)
-        player_conf.set(new_player_name, 'brimstone', '1')
-        player_conf.set(new_player_name, 'jett', '1')
-        player_conf.set(new_player_name, 'phoenix', '1')
-        player_conf.set(new_player_name, 'sage', '1')
-        player_conf.set(new_player_name, 'sova', '1')
-        player_combo = Combo(box, options=[new_player_name])
-        player_combo.value = new_player_name
-        player_combo.visible = False
-        list_agents_for_player(app, box, player_combo)
-    else:
-        error('Player Exists', 'Player already exists.')
+    if new_player_name:
+        if new_player_name not in player_conf.sections():
+            player_conf.add_section(new_player_name)
+            player_conf.set(new_player_name, 'brimstone', '1')
+            player_conf.set(new_player_name, 'jett', '1')
+            player_conf.set(new_player_name, 'phoenix', '1')
+            player_conf.set(new_player_name, 'sage', '1')
+            player_conf.set(new_player_name, 'sova', '1')
+            player_combo = Combo(box, options=[new_player_name])
+            player_combo.value = new_player_name
+            player_combo.visible = False
+            list_agents_for_player(app, box, player_combo)
+        else:
+            error('Player Exists', 'Player already exists.')
 
 # For adding a new agent to the config file
-def add_new_agent(app, box):
-    pass
+def add_new_agent():
+    new_agent_name = question('Add New Agent', 'What is the new agent\'s name?')
+    if new_agent_name:
+        if new_agent_name in agent_conf.sections():
+            error('Error', 'Agent already exists!')
+        else:
+            new_agent_name = new_agent_name.capitalize()
+            agent_conf.add_section(new_agent_name)
+            with open('conf/agents.ini', 'w') as conf:
+                agent_conf.write(conf)
+            default_agents()
+            info('Agent Added', 'Agent successfully added!')
 
 # For adding a new map to the config file
-def add_new_map(app, box):
-    pass
+def add_new_map():
+    new_map_name = question('Add New Map', 'What is the new map\'s name?')
+    if new_map_name:
+        if new_map_name in map_conf.sections():
+            error('Error', 'Map already exists!')
+        else:
+            new_map_name = new_map_name.capitalize()
+            map_conf.add_section(new_map_name)
+            with open('conf/maps.ini', 'w') as conf:
+                map_conf.write(conf)
+            default_maps()
+            info('Map Added', 'Map successfully added!')
 
 # Default window configuration
 def main(app, box):
     box.destroy()
+    app.width = 450
+    app.height = 425
     box = Box(app)
     val_logo = Picture(box, image='img/valorant_logo.png')
     val_logo.align = 'top'
@@ -227,9 +257,9 @@ def main(app, box):
         add_agent_to_player_button.bg = '#900000'
     add_new_player_button = PushButton(box, text='Add New Player', command=add_new_player, args=[app, box])
     add_new_player_button.bg = '#900000'
-    add_new_agent_button = PushButton(box, text='Add New Agent', command=add_new_agent, args=[app, box])
+    add_new_agent_button = PushButton(box, text='Add New Agent', command=add_new_agent)
     add_new_agent_button.bg = '#900000'
-    add_new_map_button = PushButton(box, text='Add New Map', command=add_new_map, args=[app, box])
+    add_new_map_button = PushButton(box, text='Add New Map', command=add_new_map)
     add_new_map_button.bg = '#900000'
     close_button = PushButton(box, text='Exit', command=exit, args=[0])
     close_button.bg = '#900000'
@@ -312,7 +342,7 @@ if __name__ == '__main__':
     default_agents()
     default_players()
     default_maps()
-    app = App(title='Random Agent Selector', bg='#191919', height=700)
+    app = App(title='Random Agent Selector', bg='#191919')
     box = Box(app, visible=False)
     main(app, box)
     app.display()
