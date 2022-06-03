@@ -53,12 +53,25 @@ def generate_agents(app, box, players_checked_vars):
         picked = random.randint(1, len(player_conf.options(player))) - 1
         anti_loop = 0
         global agents
-        while agents[picked] in used_agents or not player_conf.has_option(player, agents[picked].lower()):
-            picked = random.randint(1, len(agent_conf.sections()))-1
-            anti_loop += 1
-            if anti_loop > 1000000: # Prevents an infinite loop
-                error('Error', 'Failed to pick agents. Please try again.')
-                main(app, box)
+        check_prev_agent = str(player) + ': ' + str(agents[picked])
+        global prev_agents
+        try:
+            if len(prev_agents) > 0:
+                while agents[picked] in used_agents or not player_conf.has_option(player, agents[picked].lower()) or check_prev_agent in prev_agents:
+                    picked = random.randint(1, len(agent_conf.sections()))-1
+                    check_prev_agent = str(player) + ': ' + str(agents[picked])
+                    anti_loop += 1
+                    if anti_loop > 1000000: # Prevents an infinite loop
+                        error('Error', 'Failed to pick agents. Please try again.')
+                        main(app, box)
+        except:
+            while agents[picked] in used_agents or not player_conf.has_option(player, agents[picked].lower()):
+                picked = random.randint(1, len(agent_conf.sections()))-1
+                check_prev_agent = str(player) + ': ' + str(agents[picked])
+                anti_loop += 1
+                if anti_loop > 1000000: # Prevents an infinite loop
+                    error('Error', 'Failed to pick agents. Please try again.')
+                    main(app, box)
         used_agents.append(agents[picked])
         new_output = str(player) + ': ' + str(agents[picked]) + '\n'
         if len(new_output) + 2 > longest_output: # Updates longest output; + 2 is for brackets
@@ -71,7 +84,6 @@ def generate_agents(app, box, players_checked_vars):
     for ii in range(len(output)):
         output_step = output[ii].strip('{').strip('}')
         text.append(output_step)
-    global prev_agents
     global first_generation
     first_generation = False
     prev_agents = output
