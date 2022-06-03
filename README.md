@@ -43,6 +43,12 @@ Written by Caelan Shoop.
 
 -Extract .zip
 
+-Delete players.ini in the conf folder
+
 -(Windows) Run .vbs file
 
 -(Linux) Run .sh file
+
+-Ask your friends which agents they have unlocked and add them
+
+-Generate!
