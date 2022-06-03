@@ -33,6 +33,10 @@ Written by Caelan Shoop.
 
 ```pip install guizero```
 
+-Pyperclip
+
+```pip install pyperclip```
+
 ### Installing and Running VRAS
 
 -Download .zip file
