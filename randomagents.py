@@ -3,6 +3,7 @@ import configparser as cp
 import random
 import pyperclip as pc
 import time
+import os
 
 # First part of selecting agents function
 # This part generates the checkboxes for player names
@@ -56,10 +57,10 @@ def generate_agents(app, box, players_checked_vars):
         picked = random.randint(1, len(player_conf.options(player))) - 1
         anti_loop = 0
         global agents
-        check_prev_agent = str(player) + ': ' + str(agents[picked])
+        check_prev_agent = str(player) + ': ' + str(agents[picked]) + '\n'
         global prev_agents
         try:
-            if len(prev_agents) > 0:
+            if prev_agents:
                 while agents[picked] in used_agents or not player_conf.has_option(player, agents[picked].lower()) or check_prev_agent in prev_agents:
                     picked = random.randint(1, len(agent_conf.sections()))-1
                     check_prev_agent = str(player) + ': ' + str(agents[picked])
@@ -264,30 +265,44 @@ def main(app, box):
     close_button = PushButton(box, text='Exit', command=exit, args=[0])
     close_button.bg = '#900000'
 
+
 def default():
     global first_generation
     first_generation = True # Used for Previous Agents button
+    cur_dir = os.getcwd()
+    new_dir = 'conf'
+    conf_dir = os.path.join(cur_dir, new_dir)
+    if not os.path.isdir(conf_dir):
+        os.mkdir(conf_dir)
+    new_dir = 'img'
+    img_dir = os.path.join(cur_dir, new_dir)
+    if not os.path.isdir(img_dir):
+        os.mkdir(img_dir)
+
 
 def default_agents():
     # Agents config setup
+    global agent_conf
+    agent_conf = cp.ConfigParser()
     agent_conf_raw = cp.ConfigParser()
     try:
         agent_conf_raw.read_file(open('conf/agents.ini'))
     except:
-        warn('Warning', 'conf/agents.ini not found. Please add agents.')
-        agent_conf_raw.read('conf/agents.ini')
-        main(app, box)
+        warn('Warning', 'conf/agents.ini not found. Please add agents or download from Github.')
+        with open('conf/agents.ini', 'w') as conf:
+            agent_conf.read('conf/agents.ini')
+            return False
     global agents
     agents = []
     for agent in agent_conf_raw.sections():
         agents.append(agent)
     agents.sort()
-    global agent_conf
-    agent_conf = cp.ConfigParser()
     for agent in agents:
         agent_conf.add_section(agent)
     with open('conf/agents.ini', 'w') as conf:
         agent_conf.write(conf)
+    return True
+
 
 def default_players():
     # Players config setup
@@ -297,8 +312,9 @@ def default_players():
         player_conf.read_file(open('conf/players.ini'))
     except:
         warn('Warning', 'conf/players.ini not found. Please add players.')
-        player_conf.read('conf/players.ini')
-        main(app, box)
+        with open('conf/players.ini', 'w') as conf:
+            player_conf.read('conf/players.ini')
+        return False
     changed = False
     sorting_list = []
     for player in player_conf.sections():
@@ -319,6 +335,8 @@ def default_players():
             sort_player_conf.set(item[1], str(option), '1')
     with open('conf/players.ini', 'w') as conf:
         sort_player_conf.write(conf)
+    return True
+
 
 def default_maps():
     # Maps config setup
@@ -327,15 +345,18 @@ def default_maps():
     try:
         map_conf.read_file(open('conf/maps.ini'))
     except:
-        warn('Warning', 'conf/maps.ini not found. Please add maps.')
-        map_conf.read('conf/maps.ini')
-        main(app, box)
+        warn('Warning', 'conf/maps.ini not found. Please add maps or download from Github.')
+        with open('conf/maps.ini', 'w') as conf:
+            map_conf.read('conf/maps.ini')
+        return False
     map_list = map_conf.sections()
     map_list.sort()
     with open('conf/maps.ini', 'w') as conf:
         map_conf.write(conf)
     global maps
     maps = map_conf.sections()
+    return True
+
 
 if __name__ == '__main__':
     default()
