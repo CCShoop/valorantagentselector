@@ -57,20 +57,20 @@ def generate_agents(app, box, players_checked_vars):
         picked = random.randint(1, len(player_conf.options(player))) - 1
         anti_loop = 0
         global agents
-        check_prev_agent = str(player) + ': ' + str(agents[picked]) + '\n'
         global prev_agents
+        check_prev_agent = str(player) + ': ' + str(agents[picked]) + '\n'
         try:
             if prev_agents:
                 while agents[picked] in used_agents or not player_conf.has_option(player, agents[picked].lower()) or check_prev_agent in prev_agents:
-                    picked = random.randint(1, len(agent_conf.sections()))-1
-                    check_prev_agent = str(player) + ': ' + str(agents[picked])
+                    picked = random.randint(1, len(agent_conf.sections())) - 1
+                    check_prev_agent = str(player) + ': ' + str(agents[picked]) + '\n'
                     anti_loop += 1
                     if anti_loop > 1000000: # Prevents an infinite loop
                         error('Error', 'Failed to pick agents. Please try again.')
                         main(app, box)
         except:
             while agents[picked] in used_agents or not player_conf.has_option(player, agents[picked].lower()):
-                picked = random.randint(1, len(agent_conf.sections()))-1
+                picked = random.randint(1, len(agent_conf.sections())) - 1
                 check_prev_agent = str(player) + ': ' + str(agents[picked])
                 anti_loop += 1
                 if anti_loop > 1000000: # Prevents an infinite loop
@@ -118,8 +118,12 @@ def select_map(app, box):
     app.height = 175
     box = Box(app)
     random.seed(round(time.time() * 1000))
-    global maps
-    map = maps[random.randint(0, len(maps)-1)]
+    map_num = random.randint(0, len(maps)-1)
+    global prev_map_num
+    while map_num == prev_map_num:
+        map_num = random.randint(0, len(maps)-1)
+    prev_map_num = map_num
+    map = maps[map_num]
     text = Text(box, height=3)
     text.text_color = 'white'
     text.append('\n' + map)
@@ -269,6 +273,8 @@ def main(app, box):
 def default():
     global first_generation
     first_generation = True # Used for Previous Agents button
+    global prev_map_num
+    prev_map_num = -1
     cur_dir = os.getcwd()
     new_dir = 'conf'
     conf_dir = os.path.join(cur_dir, new_dir)
