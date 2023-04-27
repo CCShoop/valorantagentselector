@@ -5,6 +5,10 @@ import pyperclip as pc
 import time
 import os
 
+PLAYER_CONF_FILE = 'conf/players.ini'
+AGENT_CONF_FILE = 'conf/agents.ini'
+MAP_CONF_FILE = 'conf/maps.ini'
+
 # First part of selecting agents function
 # This part generates the checkboxes for player names
 def select_agents(app, box, players_checked_vars=[]):
@@ -184,7 +188,7 @@ def save_agents_to_player(app, box, player, agent_checkboxes):
     for agent, agent_checkbox in zip(agents, agent_checkboxes):
         if not player_conf.has_option(player, agent) and agent_checkbox.value:
             player_conf.set(player, agent, '1')
-    with open('conf/players.ini', 'w') as conf:
+    with open(PLAYER_CONF_FILE, 'w') as conf:
         player_conf.write(conf)
     default_players()
     info(title='Updated Successfully', text=f'{player}\'s agents were successfully updated.')
@@ -217,7 +221,7 @@ def add_new_agent():
         else:
             new_agent_name = new_agent_name.capitalize()
             agent_conf.add_section(new_agent_name)
-            with open('conf/agents.ini', 'w') as conf:
+            with open(AGENT_CONF_FILE, 'w') as conf:
                 agent_conf.write(conf)
             default_agents()
             info('Agent Added', 'Agent successfully added!')
@@ -231,7 +235,7 @@ def add_new_map():
         else:
             new_map_name = new_map_name.capitalize()
             map_conf.add_section(new_map_name)
-            with open('conf/maps.ini', 'w') as conf:
+            with open(MAP_CONF_FILE, 'w') as conf:
                 map_conf.write(conf)
             default_maps()
             info('Map Added', 'Map successfully added!')
@@ -292,11 +296,11 @@ def default_agents():
     agent_conf = cp.ConfigParser()
     agent_conf_raw = cp.ConfigParser()
     try:
-        agent_conf_raw.read_file(open('conf/agents.ini'))
+        agent_conf_raw.read_file(open(AGENT_CONF_FILE))
     except:
         warn('Warning', 'conf/agents.ini not found. Please add agents or download from Github.')
-        with open('conf/agents.ini', 'w') as conf:
-            agent_conf.read('conf/agents.ini')
+        with open(AGENT_CONF_FILE, 'w') as conf:
+            agent_conf.read(AGENT_CONF_FILE)
             return False
     global agents
     agents = []
@@ -305,7 +309,7 @@ def default_agents():
     agents.sort()
     for agent in agents:
         agent_conf.add_section(agent)
-    with open('conf/agents.ini', 'w') as conf:
+    with open(AGENT_CONF_FILE, 'w') as conf:
         agent_conf.write(conf)
     return True
 
@@ -315,11 +319,11 @@ def default_players():
     global player_conf
     player_conf = cp.ConfigParser()
     try:
-        player_conf.read_file(open('conf/players.ini'))
+        player_conf.read_file(open(PLAYER_CONF_FILE))
     except:
         warn('Warning', 'conf/players.ini not found. Please add players.')
-        with open('conf/players.ini', 'w') as conf:
-            player_conf.read('conf/players.ini')
+        with open(PLAYER_CONF_FILE, 'w') as conf:
+            player_conf.read(PLAYER_CONF_FILE)
         return False
     changed = False
     sorting_list = []
@@ -331,7 +335,7 @@ def default_players():
         sorting_list.append([len(player_conf.options(player)), player, player_conf.options(player)])
     sorting_list.sort()
     if changed:
-        with open('conf/players.ini', 'w') as conf:
+        with open(PLAYER_CONF_FILE, 'w') as conf:
             player_conf.write(conf)
     sort_player_conf = cp.ConfigParser()
     for item in sorting_list:
@@ -339,7 +343,7 @@ def default_players():
         item[2].sort()
         for option in item[2]:
             sort_player_conf.set(item[1], str(option), '1')
-    with open('conf/players.ini', 'w') as conf:
+    with open(PLAYER_CONF_FILE, 'w') as conf:
         sort_player_conf.write(conf)
     return True
 
@@ -349,15 +353,15 @@ def default_maps():
     global map_conf
     map_conf = cp.ConfigParser()
     try:
-        map_conf.read_file(open('conf/maps.ini'))
+        map_conf.read_file(open(MAP_CONF_FILE))
     except:
         warn('Warning', 'conf/maps.ini not found. Please add maps or download from Github.')
-        with open('conf/maps.ini', 'w') as conf:
-            map_conf.read('conf/maps.ini')
+        with open(MAP_CONF_FILE, 'w') as conf:
+            map_conf.read(MAP_CONF_FILE)
         return False
     map_list = map_conf.sections()
     map_list.sort()
-    with open('conf/maps.ini', 'w') as conf:
+    with open(MAP_CONF_FILE, 'w') as conf:
         map_conf.write(conf)
     global maps
     maps = map_conf.sections()
